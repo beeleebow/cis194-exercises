@@ -16,16 +16,19 @@ import Week05.ExprT
 import Week05.Parser
 import qualified Week05.StackVM as SVM
 import qualified Data.Map as M
+import Data.Maybe (fromMaybe)
 
 --------------------------------------------------- Exercise 1
 
 eval :: ExprT -> Integer
-eval = error "Week05.Calc#eval not implemented"
+eval (Lit i) = i
+eval (Add e1 e2) = eval e1 + eval e2
+eval (Mul e1 e2) = eval e1 * eval e2
 
 --------------------------------------------------- Exercise 2
 
 evalStr :: String -> Maybe Integer
-evalStr = error "Week05.Calc#evalStr not implemented"
+evalStr = (<$>) eval . parseExp Lit Add Mul
 
 --------------------------------------------------- Exercise 3
 
@@ -37,45 +40,43 @@ class Expr a where
 
 -- now write an instance for our ExprT type
 instance Expr ExprT where
-  lit = error "Week05.Calc#lit not implemented for ExprT"
-  add = error "Week05.Calc#add not implemented for ExprT"
-  mul = error "Week05.Calc#mul not implemented for ExprT"
+  lit = Lit
+  add = Add
+  mul = Mul
 
 --------------------------------------------------- Exercise 4
 -- Write instances for Integer, Bool, MinMax, and Mod7
 
-newtype MinMax = MinMax Integer deriving (Eq, Show)
+newtype MinMax = MinMax Integer deriving (Eq, Show, Ord)
 newtype Mod7 = Mod7 Integer deriving (Eq, Show)
 
 instance Expr Integer where
-  lit = error "Week05.Calc#lit not implemented for Integer"
-  add = error "Week05.Calc#lit not implemented for Integer"
-  mul = error "Week05.Calc#lit not implemented for Integer"
+  lit = id
+  add a b = a + b
+  mul a b = a * b
 
 instance Expr Bool where
-  lit = error "Week05.Calc#lit not implemented for Bool"
-  add = error "Week05.Calc#add not implemented for Bool"
-  mul = error "Week05.Calc#mul not implemented for Bool"
+  lit = (> 0)
+  add = (||)
+  mul = (&&)
 
 instance Expr MinMax where
-  lit = error "Week05.Calc#lit not implemented for MinMax"
-  add = error "Week05.Calc#add not implemented for MinMax"
-  mul = error "Week05.Calc#mul not implemented for MinMax"
+  lit = MinMax
+  add = max
+  mul = min
 
 instance Expr Mod7 where
-  lit = error "Week05.Calc#lit not implemented for Mod7"
-  add = error "Week05.Calc#add not implemented for Mod7"
-  mul = error "Week05.Calc#mul not implemented for Mod7"
-
---------------------------------------------------- Exercise 5
+  lit = Mod7 . (`mod` 7)
+  add (Mod7 i) (Mod7 j) = lit (i + j)
+  mul (Mod7 i) (Mod7 j) = lit (i * j)
 
 instance Expr SVM.Program where
-  lit = error "Week05.Calc#mul not implemented for Program"
-  add = error "Week05.Calc#mul not implemented for Program"
-  mul = error "Week05.Calc#mul not implemented for Program"
+  lit i = [SVM.PushI i]
+  add p1 p2 = p1 ++ p2 ++ [SVM.Add]
+  mul p1 p2 = p1 ++ p2 ++ [SVM.Mul]
 
 compile :: String -> SVM.Program
-compile = error "Week05.Calc#compile not implemented"
+compile s = fromMaybe [] (parseExp lit add mul s)
 
 --------------------------------------------------- Exercise 6
 
@@ -89,17 +90,50 @@ data VarExprT = LitWithVar Integer
   deriving (Show, Eq)
 
 instance Expr VarExprT where
-  lit = error "Week05.Calc#lit not implemented for VarExprT"
-  add = error "Week05.Calc#add not implemented for VarExprT"
-  mul = error "Week05.Calc#mul not implemented for VarExprT"
+  lit = LitWithVar
+  add = AddWithVar
+  mul = MulWithVar
 
 instance HasVars VarExprT where
-  var = error "Week05.Calc#var not implemented for VarExprT"
+  var = Var
 
 instance HasVars (M.Map String Integer -> Maybe Integer) where
-  var = error "Week05.Calc#var not implemented for (M.Map String Integer -> Maybe Integer)"
+  var = M.lookup
 
 instance Expr (M.Map String Integer -> Maybe Integer) where
-  lit = error "Week05.Calc#lit not implemented for (M.Map String Integer -> Maybe Integer)"
-  add = error "Week05.Calc#add not implemented for (M.Map String Integer -> Maybe Integer)"
-  mul = error "Week05.Calc#mul not implemented for (M.Map String Integer -> Maybe Integer)"
+  lit i _ = Just i
+  add f g m = do
+    x <- f m
+    y <- g m
+    return (x + y)
+    -- OR
+    -- f m >>= \x ->
+    --   g m >>= \y ->
+    --     return (x + y)
+    -- OR
+    -- case f m of
+    -- Nothing -> Nothing
+    -- Just x -> case g m of
+    --   Nothing -> Nothing
+    --   Just y -> Just (x + y)
+    -- OR
+    -- (+) <$> f m <*> g m
+  mul f g m = do
+    x <- f m
+    y <- g m
+    return (x * y)
+    -- OR
+    -- f m >>= \x ->
+    --   g m >>= \y ->
+    --     return (x * y)
+    -- OR
+    -- Nothing -> Nothing
+    -- case f m of
+    -- Just x -> case g m of
+    --   Nothing -> Nothing
+    --   Just y -> Just (x * y)
+    -- OR
+    -- (*) <$> f m <*> g m
+
+
+-- >>= then a return ===> fmap
