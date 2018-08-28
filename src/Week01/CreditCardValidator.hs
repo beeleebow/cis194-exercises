@@ -6,22 +6,28 @@ module Week01.CreditCardValidator
   , validate
   ) where
 
+reverseList :: [Integer] -> [Integer]
+reverseList [] = []
+reverseList (x:xs) = reverseList xs ++ [x]
+
 toDigits :: Integer -> [Integer]
-toDigits =
-  error "Week01.CreditCardValidator#toDigits not implemented"
+toDigits n = reverseList (toDigitsRev n)
 
 toDigitsRev :: Integer -> [Integer]
-toDigitsRev =
-  error "Week01.CreditCardValidator#toDigitsRev not implemented"
+toDigitsRev n
+  | n <= 0 = []
+  | otherwise = n `mod` 10 : toDigitsRev (n `div` 10)
+
+doubleEveryOtherFromLeft :: [Integer] -> [Integer]
+doubleEveryOtherFromLeft [] = []
+doubleEveryOtherFromLeft (x:y:zs) = x : 2*y : doubleEveryOtherFromLeft zs
+doubleEveryOtherFromLeft [x] = [x]
 
 doubleEveryOther :: [Integer] -> [Integer]
-doubleEveryOther =
-  error "Week01.CreditCardValidator#doubleEveryOther not implemented"
+doubleEveryOther xs = reverseList (doubleEveryOtherFromLeft (reverseList xs))
 
 sumDigits :: [Integer] -> Integer
-sumDigits =
-  error "Week01.CreditCardValidator#sumDigits not implemented"
+sumDigits = foldr ((+) . sum . toDigits) 0
 
 validate :: Integer -> Bool
-validate =
-  error "Week01.CreditCardValidator#validate not implemented"
+validate n = sumDigits (doubleEveryOther (toDigits n)) `mod` 10 == 0
