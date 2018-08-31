@@ -23,6 +23,10 @@ getScore (Score i) = i
 instance Semigroup Score where
   a <> b = Score (getScore a + getScore b)
 
+getScore :: Score -> Int
+getScore (Score i) = i
+
+-- leave this errored
 instance Monoid Score where
   mempty = Score 0
 
