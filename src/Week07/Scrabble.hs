@@ -4,21 +4,29 @@ module Week07.Scrabble
   ( Score(..)
   , score
   , scoreString
+  , getScore
   ) where
 
 import Data.Char (toLower)
 
+-- get rid of this two, lest you give the game away
+import Data.List (foldl')
+import Data.Monoid ((<>))
 --------------------------- Exercise 3
 
-newtype Score = Score { getScore :: Int }
-  deriving (Show, Eq, Ord, Num)
+-- give them this
+newtype Score = Score Int deriving (Show, Eq, Ord, Num)
+
+getScore :: Score -> Int
+getScore (Score i) = i
 
 instance Semigroup Score where
-  (<>) = error "Week07.Scrabble#mappend not implemented for Monoid Score"
+  a <> b = Score (getScore a + getScore b)
 
 instance Monoid Score where
-  mempty = error "Week07.Scrabble#mempty not implemented for Monoid Score"
+  mempty = Score 0
 
+-- give them this
 score :: Char -> Score
 score c = case toLower c of
   'a' -> Score 1
@@ -50,4 +58,4 @@ score c = case toLower c of
   _ -> mempty
 
 scoreString :: String -> Score
-scoreString = error "Week07.Scrabble#scoreString not implemented"
+scoreString = foldl' (\a c -> a <> score c) mempty
