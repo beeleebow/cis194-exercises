@@ -60,7 +60,7 @@ instance Ord GuestList where
 
 instance Monoid GuestList where
   mempty :: GuestList
-  mempty = error "Week08.Party#Monoid(GuestList)#mempty not implemented"
+  mempty = GL [] 0
 
   mappend :: GuestList -> GuestList -> GuestList
-  mappend = error "Week08.Party#Monoid(GuestList)#mappend not implemented"
+  mappend (GL xs f1) (GL ys f2) = GL (xs ++ ys) (f1 + f2)

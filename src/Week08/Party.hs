@@ -6,36 +6,59 @@ module Week08.Party
   , main
   ) where
 
-import Week08.Employee (GuestList(..), Employee(..))
-import Data.Tree (Tree)
+import Week08.Employee
+  ( GuestList(..)
+  , Employee(..)
+  , Fun
+  )
+import Data.List (sort)
+import Data.Monoid ((<>))
+import Data.Tree (Tree, foldTree)
 
 --------------------------- Exercise 1
 
 glCons :: Employee -> GuestList -> GuestList
-glCons = error "Week08.Party#glCons not implemented"
+glCons e@(Emp _ f) (GL es ft) = GL (e:es) (f + ft)
 
 -- See src/Week08/Employee.hs to implement
 -- the monoid instance for GuestList.
 -- Avoids orphans.
 
 moreFun :: GuestList -> GuestList -> GuestList
-moreFun = error "Week08.Party#moreFun not implemented"
+moreFun = max
 
 --------------------------- Exercise 2
 
 -- foldTree is defined in Data.Tree, go read it if you like
+-- https://hackage.haskell.org/package/containers-0.6.0.1/docs/src/Data.Tree.html#foldTree
 
 --------------------------- Exercise 3
 
 nextLevel :: Employee -> [(GuestList, GuestList)] -> (GuestList, GuestList)
-nextLevel = error "Week08.Party#nextLevel not implemented"
+nextLevel boss gls = (glCons boss guestsUnderBoss, glWithoutBoss) where
+  glWithoutBoss   = (mconcat . map fst) gls
+  guestsUnderBoss = (mconcat . map snd) gls
 
 --------------------------- Exercise 4
 
 maxFun :: Tree Employee -> GuestList
-maxFun = error "Week08.Party#maxFun not implemented"
+maxFun = uncurry moreFun . foldTree nextLevel
 
 --------------------------- Exercise 5
 
+printHeader :: Fun -> IO ()
+printHeader f = putStrLn $ "Total fun: " ++ show f
+
+printLines :: GuestList -> IO ()
+printLines = mapM_ putStrLn . sort . map empName . glGuests
+
+printGuestList :: GuestList -> IO ()
+printGuestList gl = do
+  printHeader (glFun gl)
+  printLines gl
+
 main :: IO ()
-main = putStrLn "Do the thing"
+main = do
+  contents <- readFile "./resources/Week08/company.txt"
+  let optimalGuestList = maxFun $ read contents
+  printGuestList optimalGuestList
