@@ -56,6 +56,7 @@ data Either a b = Left a | Right b deriving Show
 
 
 
+<<<<<<< HEAD
 ------------ What's the Kind? -------------- 
 
 -- What's the kind of Int?
@@ -66,6 +67,29 @@ data Either a b = Left a | Right b deriving Show
 -- What's the kind of (->)?
 -- What's the kind of (->) Int?        
 -- What's the kind of (->) Int String?
+=======
+
+
+
+
+
+
+
+
+
+
+
+------------ What's the Kind? --------------
+
+-- What's the kind of Int? *
+-- What's the kind of Maybe Int? *
+-- What's the kind of List Int? *
+-- What's the kind of Either? * -> * -> *
+-- What's the kind of Either Int? * -> *
+-- What's the kind of (->)? * -> * -> *
+-- What's the kind of (->) Int? * -> *
+-- What's the kind of (->) Int String? *
+>>>>>>> 9301a54cba574b2120a49235284dadcf632f33f0
 
 ---------------------------------------------
 
@@ -89,7 +113,21 @@ data Either a b = Left a | Right b deriving Show
 
 
 
+<<<<<<< HEAD
 ------------ Okay, back to mapping things...  -------------- 
+=======
+
+
+
+
+
+
+
+
+
+
+------------ Okay, back to mapping things...  --------------
+>>>>>>> 9301a54cba574b2120a49235284dadcf632f33f0
 
 -- How can we map over a Maybe?
 mapMaybe :: (a -> b) -> Maybe a -> Maybe b
@@ -107,6 +145,7 @@ mapInt = undefined
 -- We'll call our general pattern fmap
 -- We get a 'replace' or (<$) for free
 -- Note the kind inference :)
+<<<<<<< HEAD
  
 -------------------------------------------------------------
 
@@ -121,6 +160,44 @@ mapInt = undefined
 -- Functions? :o
 
 -- are these the only instances? Let's write another Maybe instance
+=======
+class Functor (f :: * -> *) where
+  map :: (a -> b) -> f a -> f b
+  (<$) :: a -> f b -> f a
+  (<$) = map . const
+
+-------------------------------------------------------------
+
+------------ Let's write some Functor instances --------------
+
+-- Maybe?
+-- instance Functor Maybe where
+--   map :: (a -> b) -> Maybe a -> Maybe b
+--   map _ Nothing = Nothing
+--   map f (Just x) = Just (f x)
+
+-- List?
+instance Functor List where
+  map :: (a -> b) -> List a -> List b
+  map _ Empty = Empty
+  map f (Cons x xs) = Cons (f x) (map f xs)
+
+-- Either?
+instance Functor (Either l) where
+  map :: (a -> b) -> Either l a -> Either l b
+  map _ (Left l) = Left l
+  map f (Right a) = Right (f a)
+
+-- Functions? :o
+instance Functor ((->) r) where
+  map :: (b -> c) -> (a -> b) -> a -> c
+  map = (.)
+
+-- are these the only instances? Let's write another Maybe instance
+instance Functor Maybe where
+  map :: (a -> b) -> Maybe a -> Maybe b
+  map _ _ = Nothing
+>>>>>>> 9301a54cba574b2120a49235284dadcf632f33f0
 
 -------------------------------------------------------------
 
@@ -148,7 +225,17 @@ mapInt = undefined
 
 
 
+<<<<<<< HEAD
 ------------ Time for some laws -------------- 
+=======
+
+
+
+
+
+
+------------ Time for some laws --------------
+>>>>>>> 9301a54cba574b2120a49235284dadcf632f33f0
 
 -- "Law is order, and good law is good order." - Aristotle
 
@@ -188,6 +275,24 @@ mapInt = undefined
 -- 2) fmap (f . g) F = fmap f (fmap g F)
 
 -- Back of the envelope proof...
+<<<<<<< HEAD
 -- Functor Laws for the valid Maybe instance
 -- Functor laws for the silly Maybe instance
+=======
+-- Functor Laws for the silly Maybe instance
+-- fmap id Nothing = Nothing
+-- fmap id (Just x) = Nothing -- broked!
+
+-- -- Functor laws for the valid Maybe instance
+-- fmap id Nothing = Nothing
+-- fmap id (Just x) = Just (id x) = Just xs
+
+-- fmap (f . g) Nothing = fmap f (fmap g Nothing)
+-- Nothing = Nothing
+
+-- fmap (f . g) (Just x) = fmap f (fmap g (Just x))
+-- Just (f (g x)) = fmap f (Just (g x)) = Just (f (g x))
+
+
+>>>>>>> 9301a54cba574b2120a49235284dadcf632f33f0
 
