@@ -12,7 +12,8 @@ module Week10.AParser
   ) where
 
 import Control.Applicative (Alternative(..))
-import Data.Char (isDigit)
+import Control.Monad (void)
+import Data.Char (isDigit, isUpper, chr)
 
 newtype Parser a = Parser
   { runParser :: String -> Maybe (a, String)
@@ -40,40 +41,64 @@ posInt = Parser f
 
 ---------------------------  Exercise 1
 
+first :: (a -> b) -> (a,c) -> (b,c)
+first f (a,c) = (f a, c)
+
 instance Functor Parser where
   fmap :: (a -> b) -> Parser a -> Parser b
-  fmap = error "Week10.AParser#fmap not implemented"
-
+  fmap f p = Parser (fmap (first f) . runParser p) 
+  
 ---------------------------  Exercise 2
 
 instance Applicative Parser where
   pure :: a -> Parser a
-  pure = error "Week10.AParser#pure not implemented"
+  pure a = Parser (\s -> Just(a,s))
 
   (<*>) :: Parser (a -> b) -> Parser a -> Parser b
-  (<*>) = error "Week10.AParser#(<*>) not implemented"
+  (<*>) pf pa = Parser (
+    \s -> do 
+      (f, rest) <- runParser pf s
+      (a, rest') <- runParser pa rest
+      return (f a, rest')
+    )
+
+  -- long hand
+  -- (<*>) :: Parser (a -> b) -> Parser a -> Parser b
+  -- (<*>) pf pa = Parser (\s -> case runParser pf s of
+  --   Nothing -> Nothing
+  --   Just (f, rest) -> case runParser pa rest of
+  --     Nothing -> Nothing
+  --     Just (a, rest') -> Just (f a, rest'))
 
 ---------------------------  Exercise 3
 
+-- Unravelling the types
+-- char :: Char -> Parser Char 
+-- (<*>) :: Parser (Char -> Char) -> Parser Char -> Parser (Char, Char)
+-- ((,) <$> char 'a') :: Parser (b -> (Char, b))
 abParser :: Parser (Char, Char)
-abParser = error "Week10.AParser#abParser not implemented"
+abParser = (,) <$> char 'a' <*> char 'b'
 
 abParser_ :: Parser ()
-abParser_ = error "Week10.AParser#abParser_ not implemented"
+abParser_ = () <$ abParser
 
 intPair :: Parser [Int]
-intPair = error "Week10.AParser#intPair not implemented"
+intPair = (\m n -> [fromInteger m, fromInteger n]) <$> posInt <* char ' ' <*> posInt
 
 ---------------------------  Exercise 4
 
 instance Alternative Parser where
   empty :: Parser a
-  empty = error "Week10.AParser#empty not implemented"
+  empty = Parser (const Nothing)
 
   (<|>) :: Parser a -> Parser a -> Parser a
-  (<|>) = error "Week10.AParser#(<|>) not implemented"
+  (<|>) fa1 fa2 = Parser (
+    \s -> case runParser fa1 s of
+      Nothing -> runParser fa2 s 
+      j -> j
+    )
 
 ---------------------------  Exercise 5
 
 intOrUppercase :: Parser ()
-intOrUppercase = error "Week10.AParser#intOrUppercase not implemented"
+intOrUppercase = (() <$ satisfy isUpper) <|> (() <$ posInt)
