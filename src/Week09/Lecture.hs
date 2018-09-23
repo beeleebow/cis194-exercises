@@ -56,6 +56,7 @@ data Either a b = Left a | Right b deriving Show
 
 
 
+
 ------------ What's the Kind? -------------- 
 
 -- What's the kind of Int?
@@ -148,7 +149,9 @@ mapInt = undefined
 
 
 
+
 ------------ Time for some laws -------------- 
+
 
 -- "Law is order, and good law is good order." - Aristotle
 
@@ -188,6 +191,8 @@ mapInt = undefined
 -- 2) fmap (f . g) F = fmap f (fmap g F)
 
 -- Back of the envelope proof...
+-- Functor Laws for the valid Maybe instance
+-- Functor laws for the silly Maybe instance
 -- Functor Laws for the valid Maybe instance
 -- Functor laws for the silly Maybe instance
 
