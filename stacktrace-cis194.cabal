@@ -58,6 +58,7 @@ test-suite spec
     Week07.JoinListSpec
     Week08.PartySpec
     Week10.AParserSpec
+    Week11.SExprSpec
   hs-source-dirs:
     test
   default-extensions:
