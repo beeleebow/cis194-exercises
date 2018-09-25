@@ -31,6 +31,8 @@ library
     Week08.Party
     Week08.Employee
     Week10.AParser
+    Week11.AParser
+    Week11.SExpr
   ghc-options:
     -Wall
   build-depends:
