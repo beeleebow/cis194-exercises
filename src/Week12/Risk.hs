@@ -83,12 +83,11 @@ invade bf = battle bf >>= continueIfPossible
 ------------------------------------------------------------
 -- Exercise 4
 
-noDefendersLeft :: Battlefield -> Bool
-noDefendersLeft = (== 0) . defenders
-
 successProb :: Battlefield -> Rand StdGen Double
-successProb bf = replicateM 1000 (invade bf) >>= \outcomes ->
-  return (fromIntegral (length $ filter noDefendersLeft outcomes) / 1000)
+successProb bf = f <$> replicateM 1000 (invade bf)
+  where
+    noDefendersLeft = (== 0) . defenders
+    f outcomes = (realToFrac (length $ filter noDefendersLeft outcomes) / 1000)
 
 ------------------------------------------------------------
 -- Exercise 5
